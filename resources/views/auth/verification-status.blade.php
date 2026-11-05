@@ -42,10 +42,6 @@
                 <p>{{ $user->catatan_verifikasi }}</p>
             @endif
 
-            <p>
-                Jika terdapat pertanyaan mengenai keputusan ini,
-                silakan hubungi Admin.
-            </p>
         </div>
     @endif
 

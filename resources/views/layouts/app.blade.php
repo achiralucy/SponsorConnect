@@ -23,8 +23,16 @@
                            class="{{ request()->routeIs('sponsor.profile*') ? 'active' : '' }}">Profil</a>
                     @endif
 
+                    @if (auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Beranda Admin</a>
+                        <a href="{{ route('admin.users.index') }}"
+                           class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">Kelola Pengguna</a>
+                        <a href="{{ route('admin.verifications.index') }}"
+                           class="{{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">Verifikasi Akun</a>
+                    @endif
+
                     {{-- Menu Panitia: Khaila menambahkan link di sini --}}
-                    {{-- Menu Admin: Zhafiq menambahkan link di sini --}}
                 </nav>
 
                 <div class="nav-user">

@@ -241,6 +241,6 @@ class SponsorshipCrudTest extends TestCase
             'role' => 'sponsor', 'status_verifikasi' => 'pending']);
         SponsorProfile::create(['user_id' => $user->id, 'nama_perusahaan' => 'X']);
 
-        $this->actingAs($user)->get('/sponsor/sponsorships')->assertRedirect('/login');
+        $this->actingAs($user)->get('/sponsor/sponsorships')->assertRedirect('/status-verifikasi');
     }
 }

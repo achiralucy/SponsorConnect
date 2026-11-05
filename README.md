@@ -21,6 +21,16 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Menyiapkan akun Admin
+
+Atur `ADMIN_NAME`, `ADMIN_EMAIL`, dan `ADMIN_PASSWORD` di file `.env` (password minimal 8 karakter), lalu jalankan:
+
+```bash
+php artisan db:seed --class=AdminUserSeeder
+```
+
+Seeder membuat atau memperbarui akun tersebut sebagai Admin terverifikasi. Login dengan kredensial itu untuk membuka menu **Verifikasi Akun**, tempat Admin dapat menyetujui pendaftar atau menolak dengan catatan wajib. Role Admin tidak tersedia pada registrasi publik.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
