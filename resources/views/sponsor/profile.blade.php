@@ -1,33 +1,17 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Sponsor - SponsorConnect</title>
-    <style>
-        body { font-family: sans-serif; background: #f4f6f9; margin: 0; padding: 2rem; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: .5rem; font-weight: bold; }
-        input, textarea { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        textarea { height: 100px; resize: vertical; }
-        button { width: 100%; padding: .75rem; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .alert-success { background: #d4edda; color: #155724; padding: .75rem; border-radius: 4px; margin-bottom: 1rem; }
-        .logo-preview { margin-top: 1rem; text-align: center; }
-        .logo-preview img { max-width: 150px; border-radius: 8px; border: 1px solid #ddd; padding: 4px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Profil Sponsor</h2>
+@extends('layouts.app')
 
-        @if (session('success'))
-            <div class="alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+@section('title', 'Profil Sponsor')
+@section('container_class', 'narrow')
 
+@section('content')
+    <div class="page-head">
+        <div>
+            <h1>Profil Sponsor</h1>
+            <p>Informasi ini tampil ke panitia saat mereka melihat sponsorship milikmu.</p>
+        </div>
+    </div>
+
+    <div class="card">
         <form action="{{ route('sponsor.profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -60,18 +44,14 @@
             <div class="form-group">
                 <label for="logo">Logo Perusahaan</label>
                 <input type="file" name="logo" id="logo" accept="image/*">
+                @if(!empty($profile->logo))
+                    <p class="hint">Logo saat ini:</p>
+                    <img src="{{ asset('storage/' . $profile->logo) }}" alt="Logo Sponsor"
+                         style="max-width:150px;border-radius:8px;border:1px solid var(--line);padding:4px">
+                @endif
             </div>
 
-            @if(!empty($profile->logo))
-                <div class="logo-preview">
-                    <p>Logo Saat Ini:</p>
-                    <img src="{{ asset('storage/' . $profile->logo) }}" alt="Logo Sponsor">
-                </div>
-            @endif
-
-            <br>
-            <button type="submit">Simpan Perubahan</button>
+            <button type="submit" class="btn btn-block">Simpan Perubahan</button>
         </form>
     </div>
-</body>
-</html>
+@endsection

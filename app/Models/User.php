@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -46,5 +47,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+        /** Profil sponsor (hanya ada kalau role = sponsor). */
+    public function sponsorProfile(): HasOne
+    {
+        return $this->hasOne(SponsorProfile::class);
+    }
+
+    /** Profil panitia (hanya ada kalau role = panitia). */
+    public function panitiaProfile(): HasOne
+    {
+        return $this->hasOne(PanitiaProfile::class);
     }
 }

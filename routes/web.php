@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SponsorProfileController;
+use App\Http\Controllers\SponsorshipController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,12 +21,23 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('verified_account')->group(function () {
         Route::get('/dashboard', function () {
-            return 'Selamat datang di Dashboard ' . ucfirst(auth()->user()->role) . '! Status akun Anda terverifikasi.';
+            // Sponsor langsung diarahkan ke daftar sponsorship miliknya.
+            if (auth()->user()->role === 'sponsor') {
+                return redirect()->route('sponsor.sponsorships.index');
+            }
+
+            return view('dashboard');
         })->name('dashboard');
 
         Route::middleware('role:sponsor')->group(function () {
             Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])->name('sponsor.profile');
             Route::put('/sponsor/profile', [SponsorProfileController::class, 'update'])->name('sponsor.profile.update');
+
+            // CRUD Sponsorship milik sponsor (Achira)
+            Route::resource('sponsor/sponsorships', SponsorshipController::class)
+                ->names('sponsor.sponsorships');
+            Route::patch('/sponsor/sponsorships/{sponsorship}/close', [SponsorshipController::class, 'close'])
+                ->name('sponsor.sponsorships.close');
         });
     });
 });
