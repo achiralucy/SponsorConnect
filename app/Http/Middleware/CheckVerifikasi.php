@@ -13,10 +13,7 @@ class CheckVerifikasi
         $user = $request->user();
 
         if ($user && $user->status_verifikasi !== 'terverifikasi') {
-            auth()->logout();
-            return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda belum verifikasi atau telah ditolak oleh Admin.',
-            ]);
+            return redirect()->route('verification.status');
         }
 
         return $next($request);
