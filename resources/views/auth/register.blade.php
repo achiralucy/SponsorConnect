@@ -7,6 +7,7 @@
 
     <form action="{{ route('register') }}" method="POST">
         @csrf
+
         <div class="form-group">
             <label for="name">Nama Lengkap / Instansi</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}" required>
@@ -23,6 +24,11 @@
                 <option value="panitia" {{ old('role') == 'panitia' ? 'selected' : '' }}>Panitia Acara</option>
                 <option value="sponsor" {{ old('role') == 'sponsor' ? 'selected' : '' }}>Sponsor (Perusahaan / UMKM)</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="alasan_mendaftar">Alasan Mendaftar</label>
+            <textarea name="alasan_mendaftar" id="alasan_mendaftar" rows="4" required>{{ old('alasan_mendaftar') }}</textarea>
         </div>
 
         <div class="form-group">

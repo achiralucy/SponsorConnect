@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -19,9 +20,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::get('/status-verifikasi', [AuthController::class, 'verificationStatus'])
+        ->name('verification.status');
+
     Route::middleware('verified_account')->group(function () {
         Route::get('/dashboard', function () {
-            // Sponsor langsung diarahkan ke daftar sponsorship miliknya.
             if (auth()->user()->role === 'sponsor') {
                 return redirect()->route('sponsor.sponsorships.index');
             }
@@ -33,9 +36,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])->name('sponsor.profile');
             Route::put('/sponsor/profile', [SponsorProfileController::class, 'update'])->name('sponsor.profile.update');
 
-            // CRUD Sponsorship milik sponsor (Achira)
             Route::resource('sponsor/sponsorships', SponsorshipController::class)
                 ->names('sponsor.sponsorships');
+
             Route::patch('/sponsor/sponsorships/{sponsorship}/close', [SponsorshipController::class, 'close'])
                 ->name('sponsor.sponsorships.close');
         });
