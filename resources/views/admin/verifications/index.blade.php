@@ -25,26 +25,50 @@
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
+                        @php($bukaTolak = (string) old('reject_user_id') === (string) $user->id)
                         <tr>
                             <td>
                                 <div class="title">{{ $user->name }}</div>
                                 <div class="sub">{{ $user->email }}</div>
                                 <div class="sub">Daftar {{ $user->created_at->format('d M Y H:i') }}</div>
                             </td>
+
                             <td>{{ ucfirst($user->role) }}</td>
-                            <td>{{ $user->alasan_mendaftar }}</td>
-                            <td>
-                                <div class="btn-group">
+
+                            <td class="alasan-cell">{{ $user->alasan_mendaftar }}</td>
+
+                            <td class="aksi-cell">
+                                <div class="aksi-buttons">
                                     <form action="{{ route('admin.verifications.approve', $user) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-sm">Setujui</button>
                                     </form>
+
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="document.getElementById('tolak-{{ $user->id }}').toggleAttribute('hidden')">
+                                        Tolak
+                                    </button>
                                 </div>
-                                <form action="{{ route('admin.verifications.reject', $user) }}" method="POST" style="margin-top:.75rem">
+
+                                <form id="tolak-{{ $user->id }}" class="tolak-form"
+                                    action="{{ route('admin.verifications.reject', $user) }}" method="POST"
+                                    @unless($bukaTolak) hidden @endunless>
                                     @csrf
+                                    <input type="hidden" name="reject_user_id" value="{{ $user->id }}">
+
                                     <label for="catatan_verifikasi_{{ $user->id }}">Catatan penolakan (wajib)</label>
-                                    <textarea name="catatan_verifikasi" id="catatan_verifikasi_{{ $user->id }}" rows="3" required maxlength="2000"></textarea>
-                                    <button type="submit" class="btn btn-danger btn-sm">Tolak Pendaftaran</button>
+                                    <textarea name="catatan_verifikasi" id="catatan_verifikasi_{{ $user->id }}"
+                                        rows="3" required maxlength="2000"
+                                        class="{{ $bukaTolak && $errors->has('catatan_verifikasi') ? 'is-invalid' : '' }}"
+                                        placeholder="Tulis alasan penolakan...">{{ $bukaTolak ? old('catatan_verifikasi') : '' }}</textarea>
+
+                                    @if ($bukaTolak)
+                                        @error('catatan_verifikasi')
+                                            <div class="field-error">{{ $message }}</div>
+                                        @enderror
+                                    @endif
+
+                                    <button type="submit" class="btn btn-danger btn-sm">Kirim Penolakan</button>
                                 </form>
                             </td>
                         </tr>
