@@ -10,12 +10,13 @@ use App\Http\Controllers\SponsorshipController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
@@ -43,17 +44,23 @@ Route::middleware('auth')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
             Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
             Route::get('/verifications', [AdminVerificationController::class, 'index'])
                 ->name('verifications.index');
+
             Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])
                 ->name('verifications.approve');
+
             Route::post('/verifications/{user}/reject', [AdminVerificationController::class, 'reject'])
                 ->name('verifications.reject');
         });
 
         Route::middleware('role:sponsor')->group(function () {
-            Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])->name('sponsor.profile');
-            Route::put('/sponsor/profile', [SponsorProfileController::class, 'update'])->name('sponsor.profile.update');
+            Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])
+                ->name('sponsor.profile');
+
+            Route::put('/sponsor/profile', [SponsorProfileController::class, 'update'])
+                ->name('sponsor.profile.update');
 
             Route::resource('sponsor/sponsorships', SponsorshipController::class)
                 ->names('sponsor.sponsorships');
