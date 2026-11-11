@@ -32,7 +32,15 @@
                            class="{{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">Verifikasi Akun</a>
                     @endif
 
-                    {{-- Menu Panitia: Khaila menambahkan link di sini --}}
+                    @if (auth()->user()->role === 'panitia')
+                        <a href="{{ route('panitia.sponsorships.index') }}"
+                        class="{{ request()->routeIs('panitia.sponsorships.*') ? 'active' : '' }}">Cari Sponsorship</a>
+                        <a href="{{ route('panitia.applications.index') }}"
+                        class="{{ request()->routeIs('panitia.applications.*') ? 'active' : '' }}">Pengajuan Saya</a>
+                        <a href="{{ route('panitia.profile') }}"
+                        class="{{ request()->routeIs('panitia.profile*') ? 'active' : '' }}">Profil</a>
+                    @endif
+
                 </nav>
 
                 <div class="nav-user">
