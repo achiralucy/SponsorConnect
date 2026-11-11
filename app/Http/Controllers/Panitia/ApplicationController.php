@@ -13,6 +13,80 @@ use Illuminate\View\View;
 
 class ApplicationController extends PanitiaController
 {
+        public function index(Request $request): View
+    {
+        $filters = $request->validate([
+            'status' => 'nullable|in:pending,diterima,ditolak',
+        ]);
+
+        $applications = $this->ownedApplications()
+            ->with('sponsorship.sponsor')
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('panitia.applications.index', compact('applications', 'filters'));
+    }
+
+    public function edit(string $id): View|RedirectResponse
+    {
+        $application = $this->ownedApplications()->with('sponsorship.sponsor')->findOrFail($id);
+
+        if ($blocked = $this->notEditable($application)) {
+            return $blocked;
+        }
+
+        return view('panitia.applications.edit', compact('application'));
+    }
+
+    public function update(Request $request, string $id): RedirectResponse
+    {
+        $application = $this->ownedApplications()->findOrFail($id);
+
+        if ($blocked = $this->notEditable($application)) {
+            return $blocked;
+        }
+
+        $data = $request->validate($this->rules(proposalRequired: false), $this->messages());
+
+        $values      = Arr::except($data, ['proposal']);
+        $oldProposal = null;
+
+        if ($request->hasFile('proposal')) {
+            $oldProposal        = $application->proposal;
+            $values['proposal'] = $request->file('proposal')->store('proposals', 'public');
+        }
+
+        $application->update($values);
+
+        if ($oldProposal) {
+            Storage::disk('public')->delete($oldProposal);
+        }
+
+        return redirect()->route('panitia.applications.show', $application->id)
+            ->with('success', 'Pengajuan berhasil diperbarui.');
+    }
+
+    public function destroy(string $id): RedirectResponse
+    {
+        $application = $this->ownedApplications()->findOrFail($id);
+
+        if ($blocked = $this->notEditable($application, 'dibatalkan')) {
+            return $blocked;
+        }
+
+        $proposal = $application->proposal;
+        $application->delete();
+
+        if ($proposal) {
+            Storage::disk('public')->delete($proposal);
+        }
+
+        return redirect()->route('panitia.applications.index')
+            ->with('success', 'Pengajuan dibatalkan. Kamu bisa mengajukan lagi selama sponsorship masih dibuka.');
+    }
+
     public function show(string $id): View
     {
         $application = $this->ownedApplications()
@@ -83,6 +157,16 @@ class ApplicationController extends PanitiaController
         if ($existing) {
             return redirect()->route('panitia.applications.show', $existing->id)
                 ->with('error', 'Kamu sudah mengajukan ke sponsorship ini. Satu panitia hanya bisa mengajukan satu kali.');
+        }
+
+        return null;
+    }
+
+        private function notEditable(SponsorshipApplication $application, string $aksi = 'diedit'): ?RedirectResponse
+    {
+        if ($application->status !== SponsorshipApplication::STATUS_PENDING) {
+            return redirect()->route('panitia.applications.show', $application->id)
+                ->with('error', "Pengajuan yang sudah diproses sponsor tidak bisa {$aksi}.");
         }
 
         return null;
