@@ -70,3 +70,9 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
+
+
+Route::middleware(['auth', 'verified_account', 'role:panitia'])
+    ->prefix('panitia')
+    ->name('panitia.')
+    ->group(base_path('routes/panitia.php'));
