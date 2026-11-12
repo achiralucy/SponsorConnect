@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
@@ -10,9 +9,8 @@ use App\Http\Controllers\SponsorApplicationController;
 use App\Http\Controllers\SponsorshipController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// Landing page publik
+Route::view('/', 'welcome')->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -80,7 +78,6 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
-
 
 Route::middleware(['auth', 'verified_account', 'role:panitia'])
     ->prefix('panitia')
