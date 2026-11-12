@@ -1,15 +1,19 @@
-{{-- $o = ['initials','sponsor','title','category','description',[benefits],'deadline','gradient'] --}}
-@props(['o'])
-@php [$ini, $name, $title, $cat, $desc, $ben, $dl, $g] = $o; @endphp
-<article class="card rv">
- <div class="top">
-  <div class="who"><span class="av" style="background:linear-gradient(135deg,{{ $g }})">{{ $ini }}</span>{{ $name }}</div>
-  <span class="tag t-open" style="font-size:11.5px;padding:3px 10px;border-radius:99px;font-weight:600">● Open</span>
+{{-- $s = model Sponsorship (dengan relasi sponsor), $href = tujuan tombol --}}
+@props(['s', 'href'])
+@php
+ $nama = $s->sponsor->nama_perusahaan ?? 'Sponsor';
+ $logo = $s->sponsor->logo_url ?? null;
+@endphp
+<article class="oc rv">
+ <div class="oc-who">
+  @if($logo)<img class="oc-logo" src="{{ $logo }}" alt="" loading="lazy">
+  @else<i class="oc-logo">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($nama, 0, 2)) }}</i>@endif
+  <span>{{ $nama }}</span>
  </div>
- <h3>{{ $title }}</h3>
- <span class="cat">{{ $cat }}</span>
- <p>{{ $desc }}</p>
- <ul class="ben">@foreach($ben as $b)<li><x-landing.icon name="dot" />{{ $b }}</li>@endforeach</ul>
- <div class="dl"><x-landing.icon name="cal" />Deadline pengajuan: {{ $dl }}</div>
- <a href="#" class="btn btn-g">View Details <x-landing.icon name="arrow" /></a>
+ <h3>{{ $s->judul }}</h3>
+ <p>{{ \Illuminate\Support\Str::limit(strip_tags($s->deskripsi), 110) }}</p>
+ <div class="oc-foot">
+  <small>Batas {{ $s->batas_pengajuan->locale('id')->translatedFormat('j M Y') }}</small>
+  <a href="{{ $href }}" class="oc-link">Lihat detail</a>
+ </div>
 </article>

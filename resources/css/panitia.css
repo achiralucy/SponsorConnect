@@ -4,19 +4,29 @@
 .pn-filter-icon { width: 16px; height: 16px; flex: 0 0 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .pn-filters .btn-group { align-self: end; white-space: nowrap; }
 
-.pn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 1rem; }
-.pn-card { display: flex; min-width: 0; flex-direction: column; gap: .7rem; margin: 0; padding: 1rem; }
-.pn-card-photo { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); object-fit: cover; }
+/* ===== Card sponsorship (tinggi seragam, isi ringkas) ===== */
+.pn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 1rem; align-items: stretch; }
+.pn-card { display: flex; min-width: 0; flex-direction: column; gap: .85rem; margin: 0; padding: 1.1rem; }
+.pn-card-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.pn-due { flex: none; padding: .15rem .6rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); font-size: .75rem; font-weight: 600; }
+.pn-due-soon { border-color: transparent; background: var(--warn-soft); color: var(--warn); }
+.pn-card-main { display: flex; align-items: flex-start; gap: .8rem; }
+.pn-card-text { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: .4rem; }
 .pn-card h2 { min-width: 0; font-size: 1.1rem; margin: 0; overflow-wrap: anywhere; }
-.pn-card p { min-width: 0; margin: 0; overflow-wrap: anywhere; }
 .pn-card h2 a { color: var(--ink); }
-.pn-card-description { display: -webkit-box; min-height: 3.1em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.pn-card-description strong { color: var(--ink); }
-.pn-card .meta { margin: .25rem 0 0; }
-.pn-card-actions { margin-top: auto; padding-top: .65rem; align-items: center; }
+.pn-card p { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.pn-card-description { display: -webkit-box; min-height: 2.9em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.pn-thumb { flex: 0 0 64px; width: 64px; height: 64px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); object-fit: cover; }
+.pn-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0; padding: 0; list-style: none; }
+.pn-chips li { padding: .15rem .6rem; border-radius: 999px; background: var(--brand-soft); color: var(--brand-dark); font-size: .78rem; font-weight: 500; }
+.pn-chips .pn-chip-more { background: var(--bg); color: var(--muted); }
+.pn-card-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .85rem; border-top: 1px solid var(--line); }
+.pn-card-foot .pn-muted { font-size: .82rem; }
+.pn-card-actions { margin: 0; padding: 0; align-items: center; }
+
 .pn-sponsor { display: flex; min-width: 0; align-items: center; gap: .6rem; color: var(--muted); font-size: .85rem; font-weight: 600; }
 .pn-sponsor span { overflow-wrap: anywhere; }
-.pn-logo { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+.pn-logo { width: 28px; height: 28px; flex: 0 0 28px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
 .pn-logo-lg { max-width: 120px; border-radius: 8px; border: 1px solid var(--line); padding: 4px; margin-bottom: .75rem; }
 .pn-logo-fallback { display: inline-grid; flex: 0 0 28px; width: 28px; height: 28px; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--brand-soft); color: var(--brand-dark); font-size: .75rem; font-weight: 700; }
 .pn-logo-fallback-lg { width: 56px; height: 56px; margin-bottom: .75rem; font-size: 1.25rem; }

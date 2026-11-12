@@ -52,36 +52,58 @@
     @else
         <div class="pn-grid">
             @foreach ($sponsorships as $item)
-                @php $sisa = (int) today()->diffInDays($item->batas_pengajuan, false); @endphp
+                @php
+                    $sisa = (int) today()->diffInDays($item->batas_pengajuan, false);
+                    $nama = $item->sponsor->nama_perusahaan ?? 'Sponsor';
+                    // Benefit disimpan sebagai teks bebas ("- a - b" atau per baris) -> dipecah jadi daftar singkat
+                    $benefits = collect(preg_split('/\R|\s-\s/', (string) $item->benefit))
+                        ->map(fn ($b) => trim($b, " \t-•"))
+                        ->filter()->values();
+                @endphp
                 <article class="card pn-card">
-                    @if ($item->foto_url)
-                        <img src="{{ $item->foto_url }}" alt="Foto {{ $item->judul }}" class="pn-card-photo" loading="lazy">
+                    <div class="pn-card-top">
+                        <div class="pn-sponsor">
+                            @if ($item->sponsor?->logo_url)
+                                <img src="{{ $item->sponsor->logo_url }}" alt="Logo {{ $nama }}" class="pn-logo">
+                            @else
+                                <span class="pn-logo-fallback" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($nama, 0, 1)) }}</span>
+                            @endif
+                            <span>{{ $nama }}</span>
+                        </div>
+                        <span class="pn-due {{ $sisa <= 7 ? 'pn-due-soon' : '' }}">{{ $sisa <= 0 ? 'Hari terakhir' : $sisa . ' hari lagi' }}</span>
+                    </div>
+
+                    <div class="pn-card-main">
+                        <div class="pn-card-text">
+                            <h2><a href="{{ route('panitia.sponsorships.show', $item->id) }}">{{ $item->judul }}</a></h2>
+                            <p class="pn-muted pn-card-description">{{ $item->deskripsi }}</p>
+                        </div>
+                        @if ($item->foto_url)
+                            <img src="{{ $item->foto_url }}" alt="Foto {{ $item->judul }}" class="pn-thumb" loading="lazy">
+                        @endif
+                    </div>
+
+                    @if ($benefits->isNotEmpty())
+                        <ul class="pn-chips" aria-label="Benefit">
+                            @foreach ($benefits->take(3) as $b)
+                                <li>{{ \Illuminate\Support\Str::limit($b, 26) }}</li>
+                            @endforeach
+                            @if ($benefits->count() > 3)
+                                <li class="pn-chip-more">+{{ $benefits->count() - 3 }}</li>
+                            @endif
+                        </ul>
                     @endif
-                    <div class="pn-sponsor">
-                        @if ($item->sponsor?->logo_url)
-                            <img src="{{ $item->sponsor->logo_url }}" alt="Logo {{ $item->sponsor->nama_perusahaan }}" class="pn-logo">
-                        @else
-                            <span class="pn-logo-fallback" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($item->sponsor->nama_perusahaan ?? 'S', 0, 1)) }}</span>
-                        @endif
-                        <span>{{ $item->sponsor->nama_perusahaan ?? 'Sponsor' }}</span>
-                    </div>
 
-                    <h2><a href="{{ route('panitia.sponsorships.show', $item->id) }}">{{ $item->judul }}</a></h2>
-                    <p class="pn-muted pn-card-description">{{ $item->deskripsi }}</p>
-                    <p class="pn-benefit pn-card-description"><strong>Benefit:</strong> {{ $item->benefit }}</p>
-
-                    <div class="meta">
-                        <span>Batas: <strong>{{ $item->batas_pengajuan->translatedFormat('d M Y') }}</strong>
-                            ({{ $sisa <= 0 ? 'hari terakhir' : $sisa . ' hari lagi' }})</span>
-                    </div>
-
-                    <div class="btn-group pn-card-actions">
-                        <a href="{{ route('panitia.sponsorships.show', $item->id) }}" class="btn btn-outline btn-sm">Detail</a>
-                        @if ($item->sudah_diajukan)
-                            <span class="badge pn-badge-diterima">Sudah diajukan</span>
-                        @else
-                            <a href="{{ route('panitia.sponsorships.apply', $item->id) }}" class="btn btn-sm">Ajukan</a>
-                        @endif
+                    <div class="pn-card-foot">
+                        <span class="pn-muted">Batas {{ $item->batas_pengajuan->translatedFormat('d M Y') }}</span>
+                        <div class="btn-group pn-card-actions">
+                            <a href="{{ route('panitia.sponsorships.show', $item->id) }}" class="btn btn-outline btn-sm">Detail</a>
+                            @if ($item->sudah_diajukan)
+                                <span class="badge pn-badge-diterima">Sudah diajukan</span>
+                            @else
+                                <a href="{{ route('panitia.sponsorships.apply', $item->id) }}" class="btn btn-sm">Ajukan</a>
+                            @endif
+                        </div>
                     </div>
                 </article>
             @endforeach

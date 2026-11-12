@@ -2,21 +2,27 @@
 
 @section('content')
 @php
+$login = Route::has('login') ? route('login') : '#';
 $register = Route::has('register') ? route('register') : '#';
-// Data dummy — nanti ganti dengan Sponsorship::where('status','open')->latest()->take(4)->get()
-$opps = [
- ['TI','NexaTech Solutions','Technology Innovation Festival 2026','Technology','Dukungan untuk festival inovasi teknologi yang mempertemukan startup, mahasiswa, dan praktisi industri.',['Logo pada materi utama','Booth showcase produk','Sesi talk sponsor'],'30 Des 2026','#2563EB,#22D3EE'],
- ['KB','Kopi Bumi Nusantara (UMKM)','Campus Creative Expo 2026','Kreatif & Seni','UMKM kopi lokal mencari acara kampus kreatif untuk memperluas jangkauan merek ke generasi muda.',['Stand produk','Sampling gratis','Mention di media sosial'],'15 Jan 2027','#8B5CF6,#2563EB'],
- ['BF','BankFlow Indonesia','Youth Business Summit 2026','Bisnis & Kewirausahaan','Mendukung summit wirausaha muda dengan fokus literasi keuangan dan pengembangan bisnis.',['Branding panggung','Kesempatan sesi workshop','Akses data peserta (opt-in)'],'10 Jan 2027','#22D3EE,#8B5CF6'],
- ['DC','CloudNine Digital','Digital Community Festival 2026','Komunitas Digital','Mencari festival komunitas digital untuk memperkuat kehadiran brand di kalangan kreator dan developer.',['Logo di website acara','Booth komunitas','Merchandise bersama'],'28 Feb 2027','#2563EB,#8B5CF6'],
-];
+$masuk = $login;      // tombol "Jadi Sponsor" / "Gabung"
+$isPanitia = auth()->check() && auth()->user()->role === 'panitia';
+
+// Tujuan tombol "Lihat detail": panitia ke halaman detail, lainnya ke login / dashboard
+$detailUrl = function ($s) use ($isPanitia, $login) {
+    if ($isPanitia && Route::has('panitia.sponsorships.show')) return route('panitia.sponsorships.show', $s);
+    return auth()->check() ? route('dashboard') : $login;
+};
+$semuaUrl = ($isPanitia && Route::has('panitia.sponsorships.index'))
+    ? route('panitia.sponsorships.index')
+    : (auth()->check() ? route('dashboard') : $login);
+
 $features = [
- ['layers','Open Sponsorship Management','Sponsor membuat dan mengelola peluang sponsorship lengkap dengan benefit, persyaratan, dan deadline.'],
- ['search','Smart Opportunity Discovery','Panitia menemukan berbagai peluang sponsorship yang sedang terbuka.'],
- ['send','Easy Sponsorship Application','Panitia mengirim pengajuan kerja sama dengan informasi acara dan proposal digital.'],
- ['check','Application Management','Sponsor memeriksa, menerima, atau menolak pengajuan beserta catatan keputusan.'],
- ['pulse','Application Tracking','Panitia memantau status pengajuan: menunggu, diterima, atau ditolak.'],
- ['shield','Verified User Platform','Admin memverifikasi akun sponsor dan panitia untuk menjaga kepercayaan platform.'],
+ ['layers','Kelola Open Sponsorship','Sponsor membuat dan mengelola peluang sponsorship lengkap dengan benefit, persyaratan, dan batas pengajuan.'],
+ ['search','Temukan Peluang Sponsorship','Panitia mencari peluang sponsorship yang sedang dibuka, lalu membaca detail dan persyaratannya.'],
+ ['send','Ajukan Kerja Sama dengan Mudah','Panitia mengirim pengajuan berisi informasi acara dan proposal digital.'],
+ ['check','Kelola Pengajuan Masuk','Sponsor memeriksa pengajuan, lalu menerima atau menolaknya dengan catatan keputusan.'],
+ ['pulse','Pantau Status Pengajuan','Panitia melihat status pengajuan: menunggu, diterima, atau ditolak.'],
+ ['shield','Akun Terverifikasi','Admin memverifikasi akun sponsor dan panitia agar platform tetap tepercaya.'],
 ];
 @endphp
 
@@ -24,11 +30,11 @@ $features = [
 <section class="hero" id="home">
  <div class="wrap">
   <div class="hero-rise">
-   <h1>Where Opportunities <span class="grad">Meet Collaboration.</span></h1>
-   <p>Connect with the right opportunities. Discover sponsorship opportunities, build meaningful partnerships, and make every event more impactful with SponsorConnect.</p>
+   <h1>Tempat Peluang <span class="grad">Bertemu Kolaborasi.</span></h1>
+   <p>Temukan peluang sponsorship, bangun kemitraan yang berarti, dan buat setiap acara lebih berdampak bersama SponsorConnect.</p>
    <div class="row">
-    <a href="#opportunities" class="btn btn-p">Explore Opportunities <x-landing.icon name="arrow" /></a>
-    <a href="{{ $register }}" class="btn btn-g">Become a Sponsor</a>
+    <a href="{{ $masuk }}" class="btn btn-p">Lihat Peluang Sponsorship</a>
+    <a href="{{ $masuk }}" class="btn btn-g">Jadi Sponsor</a>
    </div>
   </div>
   <div class="net hero-rise" style="animation-delay:.15s" aria-hidden="true">
@@ -39,59 +45,63 @@ $features = [
     </g>
    </svg>
    <div class="hub">Open<br>Sponsorship</div>
-   <div class="fc fc1"><small>Sponsor · Perusahaan</small><b>NexaTech Solutions</b><span class="tag t-open">● Open</span></div>
-   <div class="fc fc3"><small>Sponsor · UMKM</small><b>Kopi Bumi Nusantara</b><span class="tag t-open">● Open</span></div>
-   <div class="fc fc2"><small>Panitia</small><b>BEM Fakultas Teknik</b><span class="tag t-wait">Proposal terkirim</span></div>
-   <div class="fc fc4"><small>Status pengajuan</small><b>Menunggu keputusan</b><span class="tag t-wait">Pending</span></div>
+   <div class="fc fc1"><small>Sponsor</small><b>Membuka peluang</b><span class="tag t-open">● Dibuka</span></div>
+   <div class="fc fc3"><small>Sponsor</small><b>Meninjau pengajuan</b><span class="tag t-open">Diterima / Ditolak</span></div>
+   <div class="fc fc2"><small>Panitia</small><b>Mengirim proposal</b><span class="tag t-wait">Terkirim</span></div>
+   <div class="fc fc4"><small>Panitia</small><b>Memantau status</b><span class="tag t-wait">Menunggu</span></div>
   </div>
  </div>
 </section>
 
-{{-- B. OPPORTUNITIES --}}
+{{-- B. PELUANG SPONSORSHIP (data asli dari sponsor) --}}
 <section id="opportunities">
  <div class="wrap">
   <div class="head rv">
-   <div><h2>Explore Sponsorship Opportunities</h2>
-   <p class="lead">Discover opportunities from companies and businesses looking to collaborate with event organizers.</p></div>
-   <a href="#" class="btn btn-g">Explore All Opportunities <x-landing.icon name="arrow" /></a>
+   <div><h2>Jelajahi Peluang Sponsorship</h2>
+   <p class="lead">Peluang kerja sama dari perusahaan dan UMKM yang sedang mencari acara untuk didukung.</p></div>
+   <a href="{{ $semuaUrl }}" class="btn btn-g">Lihat Semua Peluang</a>
   </div>
-  <div class="grid4">
-   @foreach($opps as $o)<x-landing.opportunity-card :o="$o" />@endforeach
+  <div class="oc-grid">
+   @forelse($sponsorships as $s)
+    <x-landing.opportunity-card :s="$s" :href="$detailUrl($s)" />
+   @empty
+    <div class="empty"><b>Belum ada peluang yang dibuka</b>Sponsor terverifikasi dapat membuka peluang sponsorship kapan saja.</div>
+   @endforelse
   </div>
  </div>
 </section>
 
-{{-- C. FEATURES --}}
+{{-- C. FITUR --}}
 <section class="features" id="features">
  <div class="wrap">
-  <h2 class="rv">Everything You Need for Better Sponsorship Collaboration</h2>
+  <h2 class="rv">Semua yang Dibutuhkan untuk Kolaborasi Sponsorship yang Lebih Baik</h2>
   <div class="grid3">
    @foreach($features as [$ic, $t, $d])<x-landing.feature-card :icon="$ic" :title="$t">{{ $d }}</x-landing.feature-card>@endforeach
   </div>
  </div>
 </section>
 
-{{-- D. HOW IT WORKS --}}
+{{-- D. CARA KERJA --}}
 <section id="how-it-works">
  <div class="wrap">
-  <h2 class="rv">Simple Process, Meaningful Connections</h2>
+  <h2 class="rv">Proses Sederhana, Koneksi yang Bermakna</h2>
   <div class="flows">
    <x-landing.steps tone="s" title="Untuk Sponsor" sub="Buka peluang, tentukan keputusan."
-    :items="['Create an Account','Complete Your Business Profile','Publish Sponsorship Opportunities','Review Incoming Applications','Accept or Reject Applications']" />
+    :items="['Buat akun','Lengkapi profil bisnis','Buka peluang sponsorship','Tinjau pengajuan yang masuk','Terima atau tolak pengajuan']" />
    <x-landing.steps tone="p" title="Untuk Panitia" sub="Temukan peluang, ajukan kerja sama."
-    :items="['Create an Account','Complete Your Organization Profile','Explore Open Sponsorships','Submit Your Event Proposal','Track Application Status']" />
+    :items="['Buat akun','Lengkapi profil organisasi','Jelajahi peluang yang dibuka','Kirim proposal acara','Pantau status pengajuan']" />
   </div>
-  <p class="bridge rv">Dua alur, satu ekosistem: <b>langkah 3 sponsor</b> bertemu <b>langkah 3 panitia</b> di halaman peluang sponsorship.</p>
+  <p class="bridge rv">Dua alur, satu ekosistem: peluang yang dibuka sponsor adalah peluang yang dijelajahi panitia.</p>
  </div>
 </section>
 
 {{-- E. CTA --}}
 <div class="cta rv">
- <h2>Ready to Build Meaningful Partnerships?</h2>
- <p class="lead">Whether you're looking for sponsorship opportunities or ready to support the next great event, SponsorConnect brings the right connections closer.</p>
+ <h2>Siap Membangun Kemitraan yang Bermakna?</h2>
+ <p class="lead">Baik Anda mencari peluang sponsorship maupun siap mendukung acara berikutnya, SponsorConnect mendekatkan koneksi yang tepat.</p>
  <div class="row">
-  <a href="#opportunities" class="btn btn-w">Explore Opportunities <x-landing.icon name="arrow" /></a>
-  <a href="{{ $register }}" class="btn btn-g">Join SponsorConnect</a>
+  <a href="{{ $masuk }}" class="btn btn-w">Lihat Peluang Sponsorship</a>
+  <a href="{{ $masuk }}" class="btn btn-g">Gabung SponsorConnect</a>
  </div>
 </div>
 @endsection

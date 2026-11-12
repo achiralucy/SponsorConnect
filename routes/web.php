@@ -8,9 +8,10 @@ use App\Http\Controllers\SponsorProfileController;
 use App\Http\Controllers\SponsorApplicationController;
 use App\Http\Controllers\SponsorshipController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LandingController;
 
 // Landing page publik
-Route::view('/', 'welcome')->name('home');
+Route::get('/', [LandingController::class, 'index'])->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
