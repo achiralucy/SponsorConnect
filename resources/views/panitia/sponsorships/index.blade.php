@@ -13,13 +13,13 @@
 
     <form method="GET" action="{{ route('panitia.sponsorships.index') }}" class="card pn-filters">
         <div class="form-group">
-            <label for="q">Cari</label>
+            <label for="q"><svg class="pn-filter-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>Cari</label>
             <input type="text" name="q" id="q" value="{{ $filters['q'] ?? '' }}"
                    placeholder="Judul, benefit, atau nama sponsor">
         </div>
 
         <div class="form-group">
-            <label for="sponsor">Sponsor</label>
+            <label for="sponsor"><svg class="pn-filter-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 4.4 4h15.2l1.4 6.5"></path><path d="M4 10v10h16V10M8 20v-6h8v6M3 10.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"></path></svg>Sponsor</label>
             <select name="sponsor" id="sponsor">
                 <option value="">Semua sponsor</option>
                 @foreach ($sponsors as $sp)
@@ -32,7 +32,7 @@
         </div>
 
         <div class="form-group">
-            <label for="urutan">Urutkan</label>
+            <label for="urutan"><svg class="pn-filter-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10m-7 6h4"></path><path d="m17 9 3 3-3 3"></path></svg>Urutkan</label>
             <select name="urutan" id="urutan">
                 <option value="terbaru" {{ ($filters['urutan'] ?? 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru</option>
                 <option value="deadline" {{ ($filters['urutan'] ?? '') === 'deadline' ? 'selected' : '' }}>Batas pengajuan terdekat</option>
@@ -53,17 +53,22 @@
         <div class="pn-grid">
             @foreach ($sponsorships as $item)
                 @php $sisa = (int) today()->diffInDays($item->batas_pengajuan, false); @endphp
-                <div class="card pn-card">
+                <article class="card pn-card">
+                    @if ($item->foto_url)
+                        <img src="{{ $item->foto_url }}" alt="Foto {{ $item->judul }}" class="pn-card-photo" loading="lazy">
+                    @endif
                     <div class="pn-sponsor">
-                        @if (!empty($item->sponsor?->logo))
-                            <img src="{{ asset('storage/' . $item->sponsor->logo) }}" alt="Logo" class="pn-logo">
+                        @if ($item->sponsor?->logo_url)
+                            <img src="{{ $item->sponsor->logo_url }}" alt="Logo {{ $item->sponsor->nama_perusahaan }}" class="pn-logo">
+                        @else
+                            <span class="pn-logo-fallback" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($item->sponsor->nama_perusahaan ?? 'S', 0, 1)) }}</span>
                         @endif
                         <span>{{ $item->sponsor->nama_perusahaan ?? 'Sponsor' }}</span>
                     </div>
 
                     <h2><a href="{{ route('panitia.sponsorships.show', $item->id) }}">{{ $item->judul }}</a></h2>
-                    <p class="pn-muted">{{ \Illuminate\Support\Str::limit($item->deskripsi, 110) }}</p>
-                    <p class="pn-benefit"><strong>Benefit:</strong> {{ \Illuminate\Support\Str::limit($item->benefit, 80) }}</p>
+                    <p class="pn-muted pn-card-description">{{ $item->deskripsi }}</p>
+                    <p class="pn-benefit pn-card-description"><strong>Benefit:</strong> {{ $item->benefit }}</p>
 
                     <div class="meta">
                         <span>Batas: <strong>{{ $item->batas_pengajuan->translatedFormat('d M Y') }}</strong>
@@ -78,7 +83,7 @@
                             <a href="{{ route('panitia.sponsorships.apply', $item->id) }}" class="btn btn-sm">Ajukan</a>
                         @endif
                     </div>
-                </div>
+                </article>
             @endforeach
         </div>
 

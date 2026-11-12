@@ -63,7 +63,7 @@
         @if ($application->status === 'pending')
             <div class="btn-group" style="margin-top:1.25rem">
                 <form action="{{ route('panitia.applications.destroy', $application->id) }}" method="POST"
-                      onsubmit="return confirm('Batalkan pengajuan ini? Datanya akan dihapus.')">
+                        data-confirm="Batalkan pengajuan ini? Data pengajuan dan proposalnya akan dihapus.">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Batalkan Pengajuan</button>

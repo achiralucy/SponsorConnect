@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Sponsorship extends Model
 {
@@ -18,6 +19,7 @@ class Sponsorship extends Model
         'deskripsi',
         'benefit',
         'persyaratan',
+        'foto',
         'batas_pengajuan',
         'status',
     ];
@@ -67,6 +69,15 @@ class Sponsorship extends Model
         }
 
         return $this->batas_pengajuan->lt(today()) ? 'Kedaluwarsa' : 'Dibuka';
+    }
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        if (! $this->foto) {
+            return null;
+        }
+
+        return '/storage/' . ltrim($this->foto, '/') . '?v=' . ($this->updated_at?->timestamp ?? 0);
     }
 
     /**

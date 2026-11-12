@@ -109,6 +109,22 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--brand-soft)
 .alert-success { background: var(--ok-soft); color: var(--ok); border: 1px solid #b9e6d3; }
 .alert-error { background: var(--danger-soft); color: var(--danger); border: 1px solid #f4c1c4; }
 .alert ul { margin: 0; padding-left: 1.2rem; }
+.sponsor-profile-logo { max-width: 150px; max-height: 150px; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); padding: 4px; }
+.sponsorship-photo-preview { display: block; width: min(100%, 360px); aspect-ratio: 16 / 10; max-height: 240px; margin-top: .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); object-fit: cover; }
+.sponsorship-photo-preview[hidden] { display: none; }
+.sponsorship-detail-photo { display: block; width: 100%; max-height: 420px; margin: 0 0 1.25rem; border-radius: 8px; object-fit: cover; }
+.sponsorship-table-photo { display: block; width: 112px; aspect-ratio: 16 / 10; margin-bottom: .5rem; border-radius: 6px; object-fit: cover; }
+.confirm-dialog { width: min(440px, calc(100% - 2rem)); padding: 0; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); box-shadow: 0 24px 64px rgba(16, 24, 40, .2); }
+.confirm-dialog::backdrop { background: rgba(16, 24, 40, .48); }
+.confirm-dialog-content { padding: 1.5rem; }
+.confirm-dialog-content h2 { margin-bottom: .5rem; font-size: 1.15rem; }
+.confirm-dialog-content p { margin: 0; color: var(--muted); }
+.confirm-dialog-actions { justify-content: flex-end; margin-top: 1.5rem; }
+.confirm-dialog-actions button { min-width: 96px; }
+.application-status-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.application-description { margin-top: 1rem; }
+.application-review-form { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.application-note { margin-top: 1.25rem; padding: .9rem 1rem; }
 
 /* ---------- Badge status ---------- */
 .badge { display: inline-block; padding: .12rem .6rem; border-radius: 999px; font-size: .78rem; font-weight: 700; }
@@ -165,6 +181,7 @@ td .sub { color: var(--muted); font-size: .82rem; }
 
 @media (max-width: 720px) {
     .detail-grid, .role-cards { grid-template-columns: 1fr; }
+    .application-status-row { align-items: flex-start; flex-direction: column; }
     .admin-stats, .admin-shortcuts, .admin-user-filters { grid-template-columns: 1fr; }
     .hero h1 { font-size: 1.6rem; }
     .navbar-inner { gap: .5rem; }

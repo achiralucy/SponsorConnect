@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SponsorProfileController;
+use App\Http\Controllers\SponsorApplicationController;
 use App\Http\Controllers\SponsorshipController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,15 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware('role:sponsor')->group(function () {
+            Route::get('/sponsor/pengajuan', [SponsorApplicationController::class, 'index'])
+                ->name('sponsor.applications.index');
+
+            Route::get('/sponsor/pengajuan/{id}', [SponsorApplicationController::class, 'show'])
+                ->name('sponsor.applications.show');
+
+            Route::patch('/sponsor/pengajuan/{id}/review', [SponsorApplicationController::class, 'review'])
+                ->name('sponsor.applications.review');
+
             Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])
                 ->name('sponsor.profile');
 

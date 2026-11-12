@@ -12,7 +12,7 @@
     </div>
 
     <div class="card">
-        <form action="{{ route('sponsor.sponsorships.store') }}" method="POST">
+        <form action="{{ route('sponsor.sponsorships.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @include('sponsor.sponsorships.form')
 

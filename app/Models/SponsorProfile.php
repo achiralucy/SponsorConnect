@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class SponsorProfile extends Model
 {
@@ -28,5 +29,14 @@ class SponsorProfile extends Model
     public function sponsorships(): HasMany
     {
         return $this->hasMany(Sponsorship::class, 'sponsor_id');
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (! $this->logo) {
+            return null;
+        }
+
+        return '/storage/' . ltrim($this->logo, '/') . '?v=' . ($this->updated_at?->timestamp ?? 0);
     }
 }

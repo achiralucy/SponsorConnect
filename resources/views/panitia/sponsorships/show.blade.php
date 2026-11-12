@@ -21,6 +21,9 @@
     </div>
 
     <div class="card">
+        @if ($sponsorship->foto_url)
+            <img src="{{ $sponsorship->foto_url }}" alt="Foto {{ $sponsorship->judul }}" class="sponsorship-detail-photo">
+        @endif
         <div class="meta">
             <span>Sponsor: <strong>{{ $sponsorship->sponsor->nama_perusahaan ?? '-' }}</strong></span>
             <span>Batas pengajuan: <strong>{{ $sponsorship->batas_pengajuan->translatedFormat('d F Y') }}</strong></span>
@@ -46,8 +49,10 @@
     @if ($sponsorship->sponsor)
         <div class="card" style="margin-top:1rem">
             <h2>Tentang Sponsor</h2>
-            @if (!empty($sponsorship->sponsor->logo))
-                <img src="{{ asset('storage/' . $sponsorship->sponsor->logo) }}" alt="Logo sponsor" class="pn-logo-lg">
+            @if ($sponsorship->sponsor->logo_url)
+                <img src="{{ $sponsorship->sponsor->logo_url }}" alt="Logo {{ $sponsorship->sponsor->nama_perusahaan }}" class="pn-logo-lg">
+            @else
+                <span class="pn-logo-fallback pn-logo-fallback-lg" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($sponsorship->sponsor->nama_perusahaan ?? 'S', 0, 1)) }}</span>
             @endif
             <div class="meta">
                 @if ($sponsorship->sponsor->bidang_usaha)

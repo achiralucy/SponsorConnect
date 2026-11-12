@@ -26,6 +26,19 @@
 </div>
 
 <div class="form-group">
+    <label for="foto">Foto Sponsorship</label>
+    <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/webp"
+           class="@error('foto') is-invalid @enderror">
+    <div class="hint">Opsional. Format JPG, PNG, atau WebP, maksimal 4 MB.</div>
+    @error('foto') <div class="field-error">{{ $message }}</div> @enderror
+    @if ($s?->foto_url)
+        <img src="{{ $s->foto_url }}" alt="Foto {{ $s->judul }}" class="sponsorship-photo-preview" data-photo-preview>
+    @else
+        <img alt="Pratinjau foto sponsorship" class="sponsorship-photo-preview" data-photo-preview hidden>
+    @endif
+</div>
+
+<div class="form-group">
     <label for="batas_pengajuan">Batas Pengajuan</label>
     <input type="date" name="batas_pengajuan" id="batas_pengajuan"
            value="{{ old('batas_pengajuan', isset($s) ? $s->batas_pengajuan->format('Y-m-d') : '') }}"

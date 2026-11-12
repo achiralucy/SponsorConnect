@@ -44,10 +44,9 @@
             <div class="form-group">
                 <label for="logo">Logo Perusahaan</label>
                 <input type="file" name="logo" id="logo" accept="image/*">
-                @if(!empty($profile->logo))
+                @if ($profile->logo_url)
                     <p class="hint">Logo saat ini:</p>
-                    <img src="{{ asset('storage/' . $profile->logo) }}" alt="Logo Sponsor"
-                         style="max-width:150px;border-radius:8px;border:1px solid var(--line);padding:4px">
+                    <img src="{{ $profile->logo_url }}" alt="Logo {{ $profile->nama_perusahaan }}" class="sponsor-profile-logo">
                 @endif
             </div>
 

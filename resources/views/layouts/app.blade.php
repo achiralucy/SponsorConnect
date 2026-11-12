@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'SponsorConnect') - SponsorConnect</title>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <header class="navbar">
@@ -19,6 +19,8 @@
                     @if (auth()->user()->role === 'sponsor')
                         <a href="{{ route('sponsor.sponsorships.index') }}"
                            class="{{ request()->routeIs('sponsor.sponsorships.*') ? 'active' : '' }}">Sponsorship Saya</a>
+                                <a href="{{ route('sponsor.applications.index') }}"
+                                    class="{{ request()->routeIs('sponsor.applications.*') ? 'active' : '' }}">Pengajuan Masuk</a>
                         <a href="{{ route('sponsor.profile') }}"
                            class="{{ request()->routeIs('sponsor.profile*') ? 'active' : '' }}">Profil</a>
                     @endif
@@ -58,5 +60,6 @@
         @include('partials.alerts')
         @yield('content')
     </main>
+    @include('partials.confirm-dialog')
 </body>
 </html>

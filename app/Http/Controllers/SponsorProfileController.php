@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SponsorProfile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class SponsorProfileController extends Controller
 {
     public function show()
     {
-        $profile = DB::table('sponsor_profiles')
-            ->where('user_id', auth()->id())
-            ->first();
+        $profile = $this->profile();
 
         return view('sponsor.profile', compact('profile'));
     }
@@ -28,31 +26,34 @@ class SponsorProfileController extends Controller
             'logo'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $profile = DB::table('sponsor_profiles')
-            ->where('user_id', auth()->id())
-            ->first();
-
-        $logoPath = $profile ? $profile->logo : null;
+        $profile = $this->profile();
+        $oldLogo = $profile->logo;
 
         if ($request->hasFile('logo')) {
-            if ($logoPath && Storage::disk('public')->exists($logoPath)) {
-                Storage::disk('public')->delete($logoPath);
-            }
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $profile->logo = $request->file('logo')->store("logos/{$profile->user_id}", 'public');
         }
 
-        DB::table('sponsor_profiles')
-            ->where('user_id', auth()->id())
-            ->update([
-                'nama_perusahaan' => $request->nama_perusahaan,
-                'bidang_usaha'   => $request->bidang_usaha,
-                'deskripsi'      => $request->deskripsi,
-                'kontak'         => $request->kontak,
-                'alamat'         => $request->alamat,
-                'logo'           => $logoPath,
-                'updated_at'     => now(),
-            ]);
+        $profile->fill($request->only([
+            'nama_perusahaan',
+            'bidang_usaha',
+            'deskripsi',
+            'kontak',
+            'alamat',
+        ]))->save();
+
+        if ($oldLogo && $oldLogo !== $profile->logo
+            && ! SponsorProfile::where('logo', $oldLogo)->where('id', '<>', $profile->id)->exists()) {
+            Storage::disk('public')->delete($oldLogo);
+        }
 
         return back()->with('success', 'Profil sponsor berhasil diperbarui.');
+    }
+
+    private function profile(): SponsorProfile
+    {
+        $profile = auth()->user()->sponsorProfile;
+        abort_unless($profile, 403, 'Profil sponsor tidak ditemukan.');
+
+        return $profile;
     }
 }

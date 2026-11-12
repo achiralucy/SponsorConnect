@@ -56,7 +56,7 @@
                                         @if ($item->status === 'pending')
                                             <a href="{{ route('panitia.applications.edit', $item->id) }}" class="btn btn-outline btn-sm">Edit</a>
                                             <form action="{{ route('panitia.applications.destroy', $item->id) }}" method="POST"
-                                                  onsubmit="return confirm('Batalkan pengajuan ini? Datanya akan dihapus.')">
+                                                  data-confirm="Batalkan pengajuan ini? Data pengajuan dan proposalnya akan dihapus.">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">Batalkan</button>
