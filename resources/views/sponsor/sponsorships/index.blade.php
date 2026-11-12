@@ -33,6 +33,9 @@
                         @foreach ($sponsorships as $item)
                             <tr>
                                 <td>
+                                    @if ($item->foto_url)
+                                        <img src="{{ $item->foto_url }}" alt="Foto {{ $item->judul }}" class="sponsorship-table-photo">
+                                    @endif
                                     <a href="{{ route('sponsor.sponsorships.show', $item) }}" class="title">{{ $item->judul }}</a>
                                     <div class="sub">{{ \Illuminate\Support\Str::limit($item->deskripsi, 70) }}</div>
                                 </td>
@@ -49,14 +52,14 @@
                                         <a href="{{ route('sponsor.sponsorships.edit', $item) }}" class="btn btn-outline btn-sm">Edit</a>
                                         @if ($item->status === 'open')
                                             <form action="{{ route('sponsor.sponsorships.close', $item) }}" method="POST"
-                                                  onsubmit="return confirm('Tutup sponsorship ini? Panitia tidak bisa mengajukan lagi.')">
+                                                  data-confirm="Tutup sponsorship ini? Panitia tidak bisa mengajukan lagi.">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="btn btn-warn btn-sm">Tutup</button>
                                             </form>
                                         @endif
                                         <form action="{{ route('sponsor.sponsorships.destroy', $item) }}" method="POST"
-                                              onsubmit="return confirm('Hapus sponsorship ini?')">
+                                                data-confirm="Hapus sponsorship ini? Tindakan ini tidak dapat dibatalkan.">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm">Hapus</button>

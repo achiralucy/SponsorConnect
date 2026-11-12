@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sponsorship;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * CRUD sponsorship milik Sponsor yang sedang login.
@@ -37,8 +38,13 @@ class SponsorshipController extends Controller
             'deskripsi'       => 'required|string',
             'benefit'         => 'required|string',
             'persyaratan'     => 'required|string',
+            'foto'            => 'nullable|image|mimes:jpeg,jpg,png,webp|max:4096',
             'batas_pengajuan' => 'required|date|after_or_equal:today',
         ]);
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('sponsorships', 'public');
+        }
 
         $this->sponsorProfile()->sponsorships()->create($data + [
             'status' => Sponsorship::STATUS_OPEN,
@@ -73,6 +79,7 @@ class SponsorshipController extends Controller
             'deskripsi'       => 'required|string',
             'benefit'         => 'required|string',
             'persyaratan'     => 'required|string',
+            'foto'            => 'nullable|image|mimes:jpeg,jpg,png,webp|max:4096',
             'batas_pengajuan' => 'required|date',
             'status'          => 'required|in:open,closed',
         ]);
@@ -86,7 +93,19 @@ class SponsorshipController extends Controller
             ]);
         }
 
+        $oldPhoto = $sponsorship->foto;
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('sponsorships', 'public');
+        } else {
+            unset($data['foto']);
+        }
+
         $sponsorship->update($data);
+
+        if ($request->hasFile('foto') && $oldPhoto) {
+            Storage::disk('public')->delete($oldPhoto);
+        }
 
         return redirect()->route('sponsor.sponsorships.show', $sponsorship)
             ->with('success', 'Sponsorship berhasil diperbarui.');
@@ -112,6 +131,9 @@ class SponsorshipController extends Controller
         }
 
         $sponsorship->delete();
+        if ($sponsorship->foto) {
+            Storage::disk('public')->delete($sponsorship->foto);
+        }
 
         return redirect()->route('sponsor.sponsorships.index')
             ->with('success', 'Sponsorship berhasil dihapus.');

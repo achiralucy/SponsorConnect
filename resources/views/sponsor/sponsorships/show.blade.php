@@ -17,6 +17,9 @@
     </div>
 
     <div class="card">
+        @if ($sponsorship->foto_url)
+            <img src="{{ $sponsorship->foto_url }}" alt="Foto {{ $sponsorship->judul }}" class="sponsorship-detail-photo">
+        @endif
         <div class="meta">
             <span>Batas pengajuan: <strong>{{ $sponsorship->batas_pengajuan->translatedFormat('d F Y') }}</strong></span>
             <span>Pengajuan masuk: <strong>{{ $sponsorship->applications_count }}</strong></span>
@@ -39,17 +42,21 @@
             </div>
         </div>
 
+        @if ($sponsorship->applications_count)
+            <a href="{{ route('sponsor.applications.index', ['sponsorship' => $sponsorship->id]) }}" class="btn btn-outline">Tinjau Pengajuan</a>
+        @endif
+
         <div class="btn-group" style="margin-top:1.25rem">
             @if ($sponsorship->status === 'open')
                 <form action="{{ route('sponsor.sponsorships.close', $sponsorship) }}" method="POST"
-                      onsubmit="return confirm('Tutup sponsorship ini? Panitia tidak bisa mengajukan lagi.')">
+                        data-confirm="Tutup sponsorship ini? Panitia tidak bisa mengajukan lagi.">
                     @csrf
                     @method('PATCH')
                     <button type="submit" class="btn btn-warn">Tutup Sponsorship</button>
                 </form>
             @endif
             <form action="{{ route('sponsor.sponsorships.destroy', $sponsorship) }}" method="POST"
-                  onsubmit="return confirm('Hapus sponsorship ini?')">
+                data-confirm="Hapus sponsorship ini? Tindakan ini tidak dapat dibatalkan.">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">Hapus</button>

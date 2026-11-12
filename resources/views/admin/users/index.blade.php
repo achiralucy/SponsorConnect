@@ -68,7 +68,7 @@
                                     <span class="sub">Akun yang sedang digunakan</span>
                                 @else
                                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
-                                          onsubmit="return confirm('Yakin ingin menghapus akun {{ $user->name }}?')">
+                                            data-confirm="Hapus akun {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm">Hapus</button>

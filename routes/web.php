@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
@@ -6,12 +5,13 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminVerificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SponsorProfileController;
+use App\Http\Controllers\SponsorApplicationController;
 use App\Http\Controllers\SponsorshipController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LandingController;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// Landing page publik
+Route::get('/', [LandingController::class, 'index'])->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -56,6 +56,15 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware('role:sponsor')->group(function () {
+            Route::get('/sponsor/pengajuan', [SponsorApplicationController::class, 'index'])
+                ->name('sponsor.applications.index');
+
+            Route::get('/sponsor/pengajuan/{id}', [SponsorApplicationController::class, 'show'])
+                ->name('sponsor.applications.show');
+
+            Route::patch('/sponsor/pengajuan/{id}/review', [SponsorApplicationController::class, 'review'])
+                ->name('sponsor.applications.review');
+
             Route::get('/sponsor/profile', [SponsorProfileController::class, 'show'])
                 ->name('sponsor.profile');
 
@@ -70,3 +79,8 @@ Route::middleware('auth')->group(function () {
         });
     });
 });
+
+Route::middleware(['auth', 'verified_account', 'role:panitia'])
+    ->prefix('panitia')
+    ->name('panitia.')
+    ->group(base_path('routes/panitia.php'));

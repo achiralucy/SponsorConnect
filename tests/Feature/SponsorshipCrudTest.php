@@ -8,6 +8,8 @@ use App\Models\SponsorshipApplication;
 use App\Models\SponsorProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SponsorshipCrudTest extends TestCase
@@ -78,6 +80,54 @@ class SponsorshipCrudTest extends TestCase
             'judul' => 'Sponsor Seminar Nasional', 'status' => 'open',
             'sponsor_id' => $sponsor->sponsorProfile->id,
         ]);
+    }
+
+    public function test_sponsor_dapat_upload_foto_sponsorship_saat_membuat_dan_mengedit(): void
+    {
+        Storage::fake('public');
+        $sponsor = $this->makeSponsor();
+
+        $this->actingAs($sponsor)->post('/sponsor/sponsorships', $this->payload([
+            'foto' => UploadedFile::fake()->image('sponsorship.jpg'),
+        ]))->assertRedirect('/sponsor/sponsorships');
+
+        $sponsorship = Sponsorship::where('judul', 'Sponsor Seminar Nasional')->firstOrFail();
+        $initialPhoto = $sponsorship->foto;
+        $this->assertNotNull($initialPhoto);
+        Storage::disk('public')->assertExists($initialPhoto);
+
+        $imagePath = '/storage/' . $initialPhoto;
+        $this->withServerVariables(['HTTP_HOST' => 'sponsorconnect.test', 'SERVER_NAME' => 'sponsorconnect.test'])
+            ->actingAs($sponsor)->get("/sponsor/sponsorships/{$sponsorship->id}")
+            ->assertOk()->assertSee($imagePath)
+            ->assertDontSee('http://localhost' . $imagePath);
+
+        $panitiaUser = User::create(['name' => 'Panitia Foto', 'email' => 'panitia-foto@test.com', 'password' => 'password',
+            'role' => 'panitia', 'status_verifikasi' => 'terverifikasi']);
+        PanitiaProfile::create(['user_id' => $panitiaUser->id, 'nama_organisasi' => 'BEM Foto']);
+        $this->withServerVariables(['HTTP_HOST' => 'sponsorconnect.test', 'SERVER_NAME' => 'sponsorconnect.test'])
+            ->actingAs($panitiaUser)->get('/panitia/sponsorships')
+            ->assertOk()->assertSee($imagePath)
+            ->assertDontSee('http://localhost' . $imagePath);
+        $this->withServerVariables(['HTTP_HOST' => 'sponsorconnect.test', 'SERVER_NAME' => 'sponsorconnect.test'])
+            ->actingAs($panitiaUser)->get("/panitia/sponsorships/{$sponsorship->id}")
+            ->assertOk()->assertSee($imagePath)
+            ->assertDontSee('http://localhost' . $imagePath);
+
+        $this->actingAs($sponsor)->put("/sponsor/sponsorships/{$sponsorship->id}", $this->payload([
+            'status' => 'open',
+        ]))->assertRedirect("/sponsor/sponsorships/{$sponsorship->id}");
+        $this->assertSame($initialPhoto, $sponsorship->fresh()->foto);
+
+        $this->actingAs($sponsor)->put("/sponsor/sponsorships/{$sponsorship->id}", $this->payload([
+            'status' => 'open',
+            'foto' => UploadedFile::fake()->image('sponsorship-baru.png'),
+        ]))->assertRedirect("/sponsor/sponsorships/{$sponsorship->id}");
+
+        $updatedPhoto = $sponsorship->fresh()->foto;
+        $this->assertNotSame($initialPhoto, $updatedPhoto);
+        Storage::disk('public')->assertMissing($initialPhoto);
+        Storage::disk('public')->assertExists($updatedPhoto);
     }
 
     public function test_validasi_form_tambah(): void
@@ -242,5 +292,103 @@ class SponsorshipCrudTest extends TestCase
         SponsorProfile::create(['user_id' => $user->id, 'nama_perusahaan' => 'X']);
 
         $this->actingAs($user)->get('/sponsor/sponsorships')->assertRedirect('/status-verifikasi');
+    }
+
+    public function test_logo_sponsor_tersimpan_terpisah_dan_pembaruan_hanya_mengubah_pemiliknya(): void
+    {
+        Storage::fake('public');
+        $sponsorA = $this->makeSponsor('a@test.com');
+        $sponsorB = $this->makeSponsor('b@test.com');
+
+        $this->actingAs($sponsorA)->put('/sponsor/profile', [
+            'nama_perusahaan' => 'PT Maju A',
+            'logo' => UploadedFile::fake()->image('logo-a.png'),
+        ])->assertSessionHasNoErrors();
+        $logoA = $sponsorA->fresh()->sponsorProfile->logo;
+
+        $this->actingAs($sponsorB)->put('/sponsor/profile', [
+            'nama_perusahaan' => 'PT Maju B',
+            'logo' => UploadedFile::fake()->image('logo-b.png'),
+        ])->assertSessionHasNoErrors();
+        $logoB = $sponsorB->fresh()->sponsorProfile->logo;
+
+        $this->assertNotSame($logoA, $logoB);
+        $this->assertStringStartsWith("logos/{$sponsorA->id}/", $logoA);
+        $this->assertStringStartsWith("logos/{$sponsorB->id}/", $logoB);
+        Storage::disk('public')->assertExists($logoA);
+        Storage::disk('public')->assertExists($logoB);
+
+        $this->actingAs($sponsorA)->put('/sponsor/profile', [
+            'nama_perusahaan' => 'PT Maju A',
+            'logo' => UploadedFile::fake()->image('logo-a-baru.png'),
+        ])->assertSessionHasNoErrors();
+
+        Storage::disk('public')->assertMissing($logoA);
+        Storage::disk('public')->assertExists($logoB);
+        $this->assertSame($logoB, $sponsorB->fresh()->sponsorProfile->logo);
+    }
+
+    public function test_sponsor_dapat_meninjau_pengajuan_miliknya_saja(): void
+    {
+        $sponsorA = $this->makeSponsor('a@test.com');
+        $sponsorB = $this->makeSponsor('b@test.com');
+        $sponsorshipA = $this->makeSponsorship($sponsorA, ['judul' => 'Milik A']);
+        $sponsorshipA2 = $this->makeSponsorship($sponsorA, ['judul' => 'Milik A2']);
+        $sponsorshipB = $this->makeSponsorship($sponsorB, ['judul' => 'Milik B']);
+        $panitiaUser = User::create(['name' => 'Panitia', 'email' => 'panitia@test.com', 'password' => 'password',
+            'role' => 'panitia', 'status_verifikasi' => 'terverifikasi']);
+        $panitia = PanitiaProfile::create(['user_id' => $panitiaUser->id, 'nama_organisasi' => 'BEM Nusantara']);
+
+        $applicationAccepted = $panitia->applications()->create([
+            'sponsorship_id' => $sponsorshipA->id,
+            'nama_event' => 'Seminar Nasional',
+            'deskripsi_event' => 'Deskripsi seminar',
+            'tanggal_event' => now()->addMonth(),
+            'lokasi_event' => 'Aula Kampus',
+            'proposal' => 'proposals/accepted.pdf',
+        ]);
+        $applicationRejected = $panitia->applications()->create([
+            'sponsorship_id' => $sponsorshipA2->id,
+            'nama_event' => 'Festival Kampus',
+            'deskripsi_event' => 'Deskripsi festival',
+            'tanggal_event' => now()->addMonth(),
+            'lokasi_event' => 'Lapangan Kampus',
+            'proposal' => 'proposals/rejected.pdf',
+        ]);
+        $foreignApplication = $panitia->applications()->create([
+            'sponsorship_id' => $sponsorshipB->id,
+            'nama_event' => 'Acara Sponsor Lain',
+            'deskripsi_event' => 'Tidak boleh terlihat sponsor A',
+            'tanggal_event' => now()->addMonth(),
+            'lokasi_event' => 'Auditorium',
+            'proposal' => 'proposals/foreign.pdf',
+        ]);
+
+        $this->actingAs($sponsorA)->get('/sponsor/pengajuan')
+            ->assertOk()->assertSee('Seminar Nasional')->assertDontSee('Acara Sponsor Lain');
+        $this->actingAs($sponsorA)->get("/sponsor/pengajuan/{$foreignApplication->id}")->assertNotFound();
+        $this->actingAs($sponsorA)->get("/sponsor/pengajuan/{$applicationAccepted->id}")
+            ->assertOk()->assertSee('Buka proposal PDF');
+
+        $this->actingAs($sponsorA)->patch("/sponsor/pengajuan/{$applicationAccepted->id}/review", [
+            'status' => 'diterima',
+        ])->assertRedirect("/sponsor/pengajuan/{$applicationAccepted->id}");
+        $this->assertDatabaseHas('sponsorship_applications', [
+            'id' => $applicationAccepted->id,
+            'status' => 'diterima',
+        ]);
+
+        $this->actingAs($sponsorA)->patch("/sponsor/pengajuan/{$applicationRejected->id}/review", [
+            'status' => 'ditolak',
+        ])->assertSessionHasErrors('catatan_sponsor');
+        $this->actingAs($sponsorA)->patch("/sponsor/pengajuan/{$applicationRejected->id}/review", [
+            'status' => 'ditolak',
+            'catatan_sponsor' => 'Jadwal acara belum sesuai.',
+        ])->assertRedirect("/sponsor/pengajuan/{$applicationRejected->id}");
+        $this->assertDatabaseHas('sponsorship_applications', [
+            'id' => $applicationRejected->id,
+            'status' => 'ditolak',
+            'catatan_sponsor' => 'Jadwal acara belum sesuai.',
+        ]);
     }
 }
